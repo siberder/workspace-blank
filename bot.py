@@ -61,22 +61,50 @@ def handle_message(update: Update, context: CallbackContext) -> None:
         food_diary.add_entry(calories)
         update.message.reply_text(f'Added food entry with {calories} calories.')
     elif action == 'edit_entry':
-        # Implement manual editing of food entries
-        pass
+        try:
+            index, calories, protein, fat, carbohydrates = map(int, update.message.text.split())
+            food_diary.edit_entry(index, calories, protein, fat, carbohydrates)
+            update.message.reply_text(f'Edited entry at index {index}.')
+        except ValueError:
+            update.message.reply_text('Invalid input. Please provide the entry index and new values.')
     elif action == 'set_goal':
-        # Implement setting goals for calories, protein, fat, and carbohydrates
-        pass
+        try:
+            calories, protein, fat, carbohydrates = map(int, update.message.text.split())
+            food_diary.set_goal(calories, protein, fat, carbohydrates)
+            update.message.reply_text('Goals updated successfully.')
+        except ValueError:
+            update.message.reply_text('Invalid input. Please provide the new goals for calories, protein, fat, and carbohydrates.')
     elif action == 'view_history':
-        # Implement viewing previous days' entries
-        pass
+        try:
+            days = int(update.message.text)
+            entries = food_diary.view_previous_days(days)
+            if entries:
+                response = f'Entries for the past {days} days:\n'
+                for entry in entries:
+                    response += f"Calories: {entry['calories']}, Protein: {entry['protein']}, Fat: {entry['fat']}, Carbohydrates: {entry['carbohydrates']}\n"
+                update.message.reply_text(response)
+            else:
+                update.message.reply_text(f'No entries found for the past {days} days.')
+        except ValueError:
+            update.message.reply_text('Invalid input. Please provide the number of days to view.')
 
 def recognize_calories_from_photo(image: Image) -> int:
-    # Implement recognition of calories from photo using ChatGPT API
-    pass
+    response = openai.Completion.create(
+        engine="text-davinci-002",
+        prompt="Estimate the number of calories in this food item based on the photo.",
+        max_tokens=10
+    )
+    calories = int(response.choices[0].text.strip())
+    return calories
 
 def recognize_calories_from_text(text: str) -> int:
-    # Implement recognition of calories from text using ChatGPT API
-    pass
+    response = openai.Completion.create(
+        engine="text-davinci-002",
+        prompt=f"Estimate the number of calories in the following food description: {text}",
+        max_tokens=10
+    )
+    calories = int(response.choices[0].text.strip())
+    return calories
 
 def main() -> None:
     updater = Updater(TELEGRAM_API_KEY)

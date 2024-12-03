@@ -56,5 +56,15 @@ class FoodDiary:
         }
 
     def view_previous_days(self, days):
-        # This method should return entries for the previous 'days' number of days
-        pass
+        from datetime import datetime, timedelta
+
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=days)
+
+        previous_entries = []
+        for entry in self.entries:
+            entry_date = datetime.strptime(entry['date'], '%Y-%m-%d')
+            if start_date <= entry_date <= end_date:
+                previous_entries.append(entry)
+
+        return previous_entries
